@@ -52,7 +52,7 @@ module Wallop
         @channels = Wallop.lineup
       end
 
-      if request.accept && request.accept?('text/html')
+      if request.preferred_type.include?('text/html')
         content_type :html
         erb :channels
       else
@@ -69,8 +69,18 @@ module Wallop
 
       if !Wallop.sessions.has_key?(channel)
         Wallop.cleanup_channel(channel)
-        Wallop.logger.info "Tuning channel #{channel} with quality settings of #{resolution} @ #{bitrate}"
-        pid  = POSIX::Spawn::spawn(Wallop.ffmpeg_command(channel, resolution, bitrate))
+        if Wallop.config['hdhr_transcode']
+          ## validate transcode profile
+          profile = params[:profile] =~ /\A[a-z]+\d*\z/ ? params[:profile] : 'mobile'
+          Wallop.logger.info "Tuning channel #{channel} with transcode profile #{profile}"
+          pid  = POSIX::Spawn::spawn(Wallop.ffmpeg_no_transcode_command(channel, profile))
+        else
+          ## validate resolution and bitrate
+          resolution = params[:resolution] =~ /\A\d+x\d+\z/ ? params[:resolution] : '1280x720'
+          bitrate = params[:bitrate] =~ /\A\d+k\z/ ? params[:bitrate] : '3000k'
+          Wallop.logger.info "Tuning channel #{channel} with quality settings of #{resolution} @ #{bitrate}"
+          pid  = POSIX::Spawn::spawn(Wallop.ffmpeg_command(channel, resolution, bitrate))
+        end
         Process::waitpid(pid, Process::WNOHANG)
         Wallop.logger.info "Creating session for channel #{channel}"
         Wallop.sessions[params[:channel]] = {:channel => channel, :pid => pid, :ready => false, :last_read => Time.now}
