@@ -8,7 +8,7 @@ $ ->
     $('#video-player').data('status-url')
 
   tuneUrl = ->
-    $('#video-player').data('tune-url') + "?resolution=" + resolution() + "&bitrate=" + bitrate()
+    $('#video-player').data('tune-url') + "?resolution=" + resolution() + "&bitrate=" + bitrate() + "&profile=" + profile() 
 
   playUrl = ->
     $('#video-player').data('play-url')
@@ -18,6 +18,9 @@ $ ->
 
   resolution = ->
     localStorage.resolution || "1280x720"
+
+  profile = ->
+    localStorage.profile || "mobile"
 
   startLoading = (title=null, message=null) ->
     spinOpts = {
@@ -59,11 +62,16 @@ $ ->
 
     $(videoPlayer()).show()
     videoPlayer().src = playUrl()
-    videoPlayer().play()
 
     if agentID && agentID[1] == 'iphone'
       window.location.href = playUrl()
 
+    if Hls.isSupported()
+      hls = new Hls();
+      hls.loadSource(playUrl());
+      hls.attachMedia(videoPlayer());
+
+    videoPlayer().play()
 
   checkStatus = ->
     $.ajax statusUrl(),
