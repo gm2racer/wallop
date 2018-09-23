@@ -77,7 +77,7 @@ module Wallop
         else
           ## validate resolution and bitrate
           resolution = params[:resolution] =~ /\A\d+x\d+\z/ ? params[:resolution] : '1280x720'
-          bitrate = params[:bitrate] =~ /\A\d+k\z/ ? params[:bitrate] : '3000k'
+          bitrate = params[:bitrate] =~ /\A\d+k\z/ ? params[:bitrate] : '1000k'
           Wallop.logger.info "Tuning channel #{channel} with quality settings of #{resolution} @ #{bitrate}"
           pid  = POSIX::Spawn::spawn(Wallop.ffmpeg_command(channel, resolution, bitrate))
         end
