@@ -34,6 +34,8 @@ module Wallop
     audio_options = config['ffmpeg']['acodec'] == 'copy' ? '-acodec copy' : "-ac #{config['ffmpeg']['ac']} -acodec #{config['ffmpeg']['acodec']}"
     %{exec #{config['ffmpeg_path']} -threads #{config['ffmpeg']['threads']} -f mpegts -analyzeduration 2000000 -i #{raw_stream_url_for_channel(channel)}?transcode=#{profile} #{audio_options} -vcodec copy -hls_time #{config['ffmpeg']['hls_time']} -hls_wrap #{config['ffmpeg']['hls_wrap']} #{config['ffmpeg']['options']} #{transcoding_path}/#{channel}.m3u8 >log/ffmpeg.log 2>&1}
   end
+  
+  
 
   def self.snapshot_command(channel, width=nil)
     width ||= 'iw/3'
